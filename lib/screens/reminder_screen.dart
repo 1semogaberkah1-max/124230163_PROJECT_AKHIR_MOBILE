@@ -1,10 +1,12 @@
+// File: lib/screens/reminder_screen.dart
+
 import 'package:flutter/material.dart';
-import '../main.dart';
+import '../main.dart'; // Akses supabase
 import '../models/reminder_model.dart';
 import '../models/user_profile_model.dart';
 import '../services/reminder_service.dart';
 import '../services/user_service.dart';
-import '../services/notification_service.dart';
+import '../services/notification_service.dart'; // <-- IMPORT BARU
 
 class ReminderScreen extends StatefulWidget {
   const ReminderScreen({super.key});
@@ -16,7 +18,8 @@ class ReminderScreen extends StatefulWidget {
 class _ReminderScreenState extends State<ReminderScreen> {
   final ReminderService _reminderService = ReminderService();
   final UserService _userService = UserService();
-  final NotificationService _notificationService = NotificationService();
+  final NotificationService _notificationService =
+      NotificationService(); // <-- TAMBAHKAN
 
   UserProfile? _currentUserProfile;
   Future<List<Reminder>>? _remindersFuture;
@@ -40,7 +43,9 @@ class _ReminderScreenState extends State<ReminderScreen> {
   }
 
   Future<void> _loadInitialData() async {
+    // --- Minta Izin Notifikasi ---
     await _notificationService.requestPermissions();
+    // ----------------------------
 
     final user = supabase.auth.currentUser;
     if (user == null) {
@@ -64,6 +69,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
     });
   }
 
+  // --- Fungsi CRUD ---
+
   Future<void> _toggleReminder(Reminder reminder) async {
     final updatedReminder = Reminder(
       id: reminder.id,
@@ -72,10 +79,11 @@ class _ReminderScreenState extends State<ReminderScreen> {
       scheduleDay: reminder.scheduleDay,
       scheduleTime: reminder.scheduleTime,
       timezone: reminder.timezone,
-      isActive: !reminder.isActive,
+      isActive: !reminder.isActive, // <-- Ubah status
       createdAt: reminder.createdAt,
     );
 
+    // Panggil service (service akan urus notifikasi)
     final success = await _reminderService.updateReminder(updatedReminder);
     if (success) {
       _refreshReminders();
@@ -108,6 +116,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
 
     if (confirmed == true) {
+      // Panggil service (service akan urus notifikasi)
       final success = await _reminderService.deleteReminder(id);
       if (success) {
         _refreshReminders();
@@ -120,6 +129,8 @@ class _ReminderScreenState extends State<ReminderScreen> {
       }
     }
   }
+
+  // --- Tampilan UI ---
 
   @override
   Widget build(BuildContext context) {
@@ -213,6 +224,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
+  // --- Bottom Sheet Form Tambah Reminder ---
   void _showAddReminderSheet(BuildContext context, UserProfile profile) {
     final formKey = GlobalKey<FormState>();
     String title = '';
@@ -223,6 +235,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) => StatefulBuilder(
+        // Gunakan StatefulBuilder
         builder: (BuildContext context, StateSetter setModalState) {
           return Padding(
             padding: EdgeInsets.only(
@@ -274,6 +287,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                     onChanged: (value) {
                       if (value != null) {
                         setModalState(() {
+                          // Update state di dalam bottom sheet
                           selectedDay = value;
                         });
                       }
@@ -299,6 +313,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                         );
                         if (picked != null && picked != selectedTime) {
                           setModalState(() {
+                            // Update state di dalam bottom sheet
                             selectedTime = picked;
                           });
                         }
@@ -320,6 +335,7 @@ class _ReminderScreenState extends State<ReminderScreen> {
                           createdAt: DateTime.now(),
                         );
 
+                        // Panggil service (service akan urus notifikasi)
                         final success = await _reminderService.addReminder(
                           reminder: newReminder,
                           currentUserId: profile.id,

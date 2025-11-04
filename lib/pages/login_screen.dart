@@ -1,8 +1,10 @@
+// File: lib/pages/login_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:rive/rive.dart';
 import '../services/auth_service.dart';
-import 'signup_screen.dart';
-import '../main.dart';
+import 'signup_screen.dart'; // Import halaman sign up
+import '../main.dart'; // Import untuk AppColorsLight/supabase
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
+  // STATE RIVE DAN VISIBILITY
   bool _isPasswordVisible = false;
   FocusNode emailFocusNode = FocusNode();
   FocusNode passwordFocusNode = FocusNode();
@@ -25,11 +28,13 @@ class _LoginScreenState extends State<LoginScreen> {
   SMIBool? peekOnPassword;
   SMITrigger? triggerSuccess;
   SMITrigger? triggerFail;
+  // -------------------------
 
   bool _isLoading = false;
 
   @override
   void initState() {
+    // RIVE LISTENERS
     emailFocusNode.addListener(() {
       lookOnEmail?.change(emailFocusNode.hasFocus);
     });
@@ -83,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
       context: context,
     );
 
+    // Logika RIVE (Dipindahkan ke Auth Service)
     final user = supabase.auth.currentUser;
 
     if (user != null) {
@@ -125,6 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // 1. RIVE ANIMATION
                 SizedBox(
                   height: 250,
                   width: 250,
@@ -153,6 +160,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // 2. LOGIN FORM
                 Container(
                   decoration: BoxDecoration(
                     color: surfaceColor,
@@ -180,6 +189,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
+
+                      // Input Email
                       TextField(
                         focusNode: emailFocusNode,
                         controller: _emailController,
@@ -193,6 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
+
+                      // Input Password
                       TextField(
                         focusNode: passwordFocusNode,
                         controller: _passwordController,
@@ -215,6 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
+
                       ElevatedButton(
                         onPressed: _isLoading ? null : _handleLogin,
                         child: _isLoading
@@ -235,6 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                       ),
                       const SizedBox(height: 16),
+                      // --- TOMBOL DAFTAR YANG HILANG ---
                       TextButton(
                         onPressed: () {
                           emailFocusNode.unfocus();
@@ -247,6 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         },
                         child: const Text('Belum punya akun? Daftar di sini'),
                       ),
+                      // -------------------------------
                     ],
                   ),
                 ),

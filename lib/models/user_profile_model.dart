@@ -1,12 +1,14 @@
+// File: lib/models/user_profile_model.dart
+
 class UserProfile {
-  final String id;
-  final String authUid;
+  final String id; // users.id (UUID)
+  final String authUid; // auth.uid()
   final String email;
   final String? fullName;
   final String? photoUrl;
   final String defaultTz;
   final DateTime createdAt;
-  final List<String> aiReminderPrefs;
+  final List<String> aiReminderPrefs; // List of selected reminder types
 
   UserProfile({
     required this.id,
@@ -20,6 +22,7 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    // Default categories jika data di Supabase null/kosong
     final List<String> defaultCategories = [
       'Reminder Belajar',
       'Saran Materi',
@@ -30,7 +33,7 @@ class UserProfile {
     final List<dynamic>? rawPrefs = json['ai_reminder_prefs'];
     final List<String> prefs = (rawPrefs != null && rawPrefs.isNotEmpty)
         ? List<String>.from(rawPrefs.where((e) => e != null))
-        : defaultCategories;
+        : defaultCategories; // Fallback ke default
 
     return UserProfile(
       id: json['id'] as String,
@@ -44,6 +47,7 @@ class UserProfile {
     );
   }
 
+  // Digunakan oleh profile_screen.dart (copyWith)
   UserProfile copyWith({
     String? fullName,
     String? photoUrl,
@@ -61,6 +65,7 @@ class UserProfile {
     );
   }
 
+  // Digunakan oleh user_service.dart (untuk update ke Supabase)
   Map<String, dynamic> toJsonForUpdate() {
     return {
       'full_name': fullName,

@@ -1,5 +1,10 @@
-const String geminiApiKey = 'Kunci untuk Gemini AI';
+// File: lib/core/constants.dart
+// (VERSI TANPA .env)
 
-const String exchangeRateApiKey = 'Kunci untuk API Kurs Mata Uang';
+// HAPUS import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-const String youtubeApiKey = 'Kunci untuk API Kurs Mata Uang';
+// Kunci untuk Gemini AI
+const String geminiApiKey = 'AIzaSyA-Z69kuZ5p0Fb-hvB-goA7UehHb3Gs_-g';
+
+// Kunci untuk API Kurs Mata Uang
+const String exchangeRateApiKey = '8640325ef4df22f7f81e209c';

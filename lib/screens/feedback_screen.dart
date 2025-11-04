@@ -1,5 +1,8 @@
+// File: lib/screens/feedback_screen.dart
+
 import 'package:flutter/material.dart';
-import '../main.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../main.dart'; // Akses supabase
 import '../models/feedback_model.dart';
 import '../models/user_profile_model.dart';
 import '../services/feedback_service.dart';
@@ -125,6 +128,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             controller: _kesanController,
             decoration: const InputDecoration(
               hintText: 'Tulis kesan Anda tentang mata kuliah ini...',
+              // Style (border, filled) diambil dari tema
+              // --- PERBAIKAN: HAPUS fillColor ---
+              // fillColor: Color.fromARGB(255, 245, 245, 245),
             ),
             maxLines: 6,
           ),
@@ -138,6 +144,9 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
             controller: _saranController,
             decoration: const InputDecoration(
               hintText: 'Tulis saran Anda untuk perbaikan ke depannya...',
+              // Style (border, filled) diambil dari tema
+              // --- PERBAIKAN: HAPUS fillColor ---
+              // fillColor: Color.fromARGB(255, 245, 245, 245),
             ),
             maxLines: 6,
           ),
@@ -155,6 +164,7 @@ class _FeedbackScreenState extends State<FeedbackScreen> {
                   )
                 : const Icon(Icons.save),
             label: Text(_isSaving ? 'Menyimpan...' : 'Simpan Perubahan'),
+            // Style diambil dari tema
           ),
         ],
       ),

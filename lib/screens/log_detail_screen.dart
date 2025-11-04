@@ -1,14 +1,11 @@
+// File: lib/screens/log_detail_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../models/learning_log_model.dart';
-import '../models/video_model.dart';
-
 import '../services/log_service.dart';
 import '../services/currency_service.dart';
-import '../services/youtube_service.dart';
-import '../services/gemini_service.dart';
 import 'log_list_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -24,9 +21,6 @@ class LogDetailScreen extends StatefulWidget {
 class _LogDetailScreenState extends State<LogDetailScreen> {
   final LogService _logService = LogService();
   final CurrencyService _currencyService = CurrencyService();
-  final YoutubeService _youtubeService = YoutubeService();
-  final GeminiService _geminiService = GeminiService();
-
   bool _isDeleting = false;
 
   late TextEditingController _materialController;
@@ -37,10 +31,6 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   late Future<Map<String, dynamic>?> _ratesFuture;
-  late Future<List<VideoModel>> _videoFuture;
-
-  String? _infoSummary;
-  bool _isInfoLoading = false;
 
   @override
   void initState() {
@@ -55,7 +45,6 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
     _notesController = TextEditingController(text: widget.log.notes);
 
     _ratesFuture = _currencyService.getExchangeRates();
-    _videoFuture = _youtubeService.searchVideos(widget.log.material);
   }
 
   @override
@@ -102,7 +91,7 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
 
     if (confirmed == true) {
       setState(() => _isDeleting = true);
-      final success = await _logService.deleteLog(widget.log.id);
+      final success = await _logService.deleteLog(widget.log.id!);
 
       if (mounted) {
         if (success) {
@@ -175,51 +164,6 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
     }
   }
 
-  Future<void> _launchVideo(String videoId) async {
-    final Uri url = Uri.parse('https://www.youtube.com/watch?v=$videoId');
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal membuka video.')),
-        );
-      }
-    }
-  }
-
-  Future<void> _fetchGeneralInfo() async {
-    setState(() {
-      _isInfoLoading = true;
-      _infoSummary = null;
-    });
-
-    final query = _materialController.text.trim();
-    final summaryData = await _geminiService.getGeneralKnowledge(query);
-
-    if (mounted) {
-      setState(() {
-        _isInfoLoading = false;
-        if (summaryData != null && summaryData.isNotEmpty) {
-          _infoSummary = summaryData;
-        } else {
-          _infoSummary = 'Tidak ada ringkasan yang ditemukan untuk "$query".';
-        }
-      });
-    }
-  }
-
-  Future<void> _refreshVideos() async {
-    final query = _materialController.text.trim();
-    if (query.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Materi tidak boleh kosong.')),
-      );
-      return;
-    }
-    setState(() {
-      _videoFuture = _youtubeService.searchVideos(query);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final log = widget.log;
@@ -250,164 +194,148 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (log.photoUrl != null && log.photoUrl!.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bukti Foto:',
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 250,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade300),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Tampilan Foto
+              if (log.photoUrl != null && log.photoUrl!.isNotEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bukti Foto:',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 250,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: CachedNetworkImage(
+                          imageUrl: log.photoUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => const Center(
+                            child: CircularProgressIndicator(),
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: CachedNetworkImage(
-                              imageUrl: log.photoUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  const Center(
-                                child: Icon(Icons.error, color: Colors.red),
-                              ),
-                            ),
+                          errorWidget: (context, url, error) => const Center(
+                            child: Icon(Icons.error, color: Colors.red),
                           ),
                         ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  TextFormField(
-                    controller: _materialController,
-                    decoration: const InputDecoration(
-                      labelText: 'Materi Belajar',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Materi tidak boleh kosong.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _durationController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: InputDecoration(
-                      labelText: 'Durasi (Menit)',
-                      suffixText: _formatDuration(
-                        int.tryParse(_durationController.text) ?? 0,
                       ),
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Durasi tidak boleh kosong.';
-                      }
-                      if (int.tryParse(value) == null) {
-                        return 'Harus angka.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _costController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(
-                      labelText: 'Biaya (IDR)',
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Biaya tidak boleh kosong.';
-                      }
-                      if (int.tryParse(value) == null) {
-                        return 'Harus angka.';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  _buildCurrencySection(log.costIdr),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _notesController,
-                    maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Catatan',
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.pin_drop,
-                        color: Theme.of(context).colorScheme.primary),
-                    title: Text('Lokasi: ${log.location ?? 'Tidak Dicatat'}'),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(Icons.access_time,
-                        color: Theme.of(context).colorScheme.primary),
-                    title: Text('Waktu Dicatat: $formattedDate'),
-                  ),
-                  const SizedBox(height: 30),
-                  ElevatedButton.icon(
-                    onPressed: _isDeleting ? null : _updateLog,
-                    icon: const Icon(Icons.save),
-                    label: const Text(
-                      'Simpan Perubahan',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                  ],
+                ),
+
+              // Form Edit
+              TextFormField(
+                controller: _materialController,
+                decoration: const InputDecoration(
+                  labelText: 'Materi Belajar',
+                ),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Materi tidak boleh kosong.';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const Divider(height: 40, thickness: 1),
-            _buildInfoSection(),
-            const Divider(height: 40, thickness: 1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Rekomendasi Video Terkait',
-                  style: Theme.of(context).textTheme.titleLarge,
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _durationController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  labelText: 'Durasi (Menit)',
+                  suffixText: _formatDuration(
+                    int.tryParse(_durationController.text) ?? 0,
+                  ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.refresh,
-                      color: Theme.of(context).colorScheme.primary),
-                  onPressed: _refreshVideos,
-                  tooltip: 'Segarkan video berdasarkan materi',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Durasi tidak boleh kosong.';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Harus angka.';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _costController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                  labelText: 'Biaya (IDR)',
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            _buildVideoSection(),
-          ],
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Biaya tidak boleh kosong.';
+                  }
+                  if (int.tryParse(value) == null) {
+                    return 'Harus angka.';
+                  }
+                  return null;
+                },
+              ),
+
+              const SizedBox(height: 8),
+              _buildCurrencySection(log.costIdr),
+              const SizedBox(height: 16),
+
+              TextFormField(
+                controller: _notesController,
+                maxLines: 4,
+                decoration: const InputDecoration(
+                  labelText: 'Catatan',
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Metadata
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.pin_drop,
+                    color: Theme.of(context).colorScheme.primary),
+                title: Text('Lokasi: ${log.location ?? 'Tidak Dicatat'}'),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.access_time,
+                    color: Theme.of(context).colorScheme.primary),
+                title: Text('Waktu Dicatat: $formattedDate'),
+              ),
+              const SizedBox(height: 30),
+
+              // Tombol Simpan
+              ElevatedButton.icon(
+                onPressed: _isDeleting ? null : _updateLog,
+                icon: const Icon(Icons.save),
+                label: const Text(
+                  'Simpan Perubahan',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  // --- WIDGET KONVERSI MATA UANG (PERBAIKAN) ---
   Widget _buildCurrencySection(int costIdr) {
     if (costIdr == 0) {
       return Container();
@@ -457,7 +385,10 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
+            // --- PERBAIKAN DI SINI ---
+            // Menggunakan warna tema, bukan hardcode
             color: Theme.of(context).colorScheme.surfaceVariant,
+            // -------------------------
             borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
@@ -465,6 +396,7 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
             children: [
               Text(
                 'Estimasi Biaya (Konversi):',
+                // Teks akan otomatis mengambil warna onSurfaceVariant
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium
@@ -484,112 +416,6 @@ class _LogDetailScreenState extends State<LogDetailScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildVideoSection() {
-    return FutureBuilder<List<VideoModel>>(
-      future: _videoFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return const Center(child: Text('Gagal memuat video.'));
-        }
-
-        final videos = snapshot.data;
-        if (videos == null || videos.isEmpty) {
-          return const Center(child: Text('Tidak ada video rekomendasi.'));
-        }
-
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: videos.length,
-          itemBuilder: (context, index) {
-            final video = videos[index];
-            return Card(
-              elevation: 2,
-              margin: const EdgeInsets.symmetric(vertical: 6),
-              child: ListTile(
-                leading: ClipRRect(
-                  borderRadius: BorderRadius.circular(4.0),
-                  child: CachedNetworkImage(
-                    imageUrl: video.thumbnailUrl,
-                    width: 100,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 100,
-                      color: Colors.grey.shade300,
-                      child: const Center(child: Icon(Icons.image)),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 100,
-                      color: Colors.grey.shade300,
-                      child: const Center(child: Icon(Icons.error)),
-                    ),
-                  ),
-                ),
-                title: Text(
-                  video.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(video.channelTitle),
-                onTap: () {
-                  _launchVideo(video.id);
-                },
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Ketahui Lebih Lanjut',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 12),
-        if (_isInfoLoading)
-          const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ),
-          ),
-        if (_infoSummary != null)
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              _infoSummary!,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        if (!_isInfoLoading)
-          OutlinedButton.icon(
-            onPressed: _fetchGeneralInfo,
-            icon: const Icon(Icons.search, size: 18),
-            label: Text(_infoSummary == null
-                ? '🔍 Cari Tahu "${_materialController.text.trim()}"'
-                : 'Segarkan Ringkasan'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-      ],
     );
   }
 }

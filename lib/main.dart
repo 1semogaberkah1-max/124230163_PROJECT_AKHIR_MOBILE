@@ -1,5 +1,5 @@
-
-
+// File: lib/main.dart
+// (DIKEMBALIKAN KE VERSI SEMULA - TANPA .env)
 
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,21 +13,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'services/theme_service.dart';
 
-
+// HAPUS import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 final supabase = Supabase.instance.client;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  
+  // HAPUS await dotenv.load(fileName: ".env");
 
   await initializeDateFormatting('id_ID', null);
   tz.initializeTimeZones();
   await NotificationService().init();
 
-  
-  const String supabaseUrl = 'https:
+  // KEMBALIKAN KUNCI API SECARA LANGSUNG (dari file asli Anda)
+  const String supabaseUrl = 'https://pjvcjpcvtuhctgvsvbib.supabase.co';
   const String supabaseAnonKey =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBqdmNqcGN2dHVoY3RndnN2YmliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE4NTg4NTQsImV4cCI6MjA3NzQzNDg1NH0.Pus1YJL9Fai4E1Nop7AFyeWenSNM3sP_3UeLUQh5f0Y';
 
@@ -41,7 +41,7 @@ Future<void> main() async {
   );
 }
 
-
+// Palet Warna Tema Terang (Light)
 class AppColorsLight {
   static const Color background = Color(0xFFEFF6FF);
   static const Color card = Color(0xFFFFFFFF);
@@ -51,7 +51,7 @@ class AppColorsLight {
   static const Color textLight = Color(0xFFFFFFFF);
 }
 
-
+// Palet Warna Tema Gelap (Dark)
 class AppColorsDark {
   static const Color background = Color(0xFF213547);
   static const Color card = Color(0xFF2C4154);
@@ -66,12 +66,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
+    // --- TEMA TERANG (LIGHT THEME) ---
     final ThemeData lightTheme = ThemeData(
-      
+      // brightness: Brightness.light, // <-- DIHAPUS DARI SINI
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColorsLight.primary,
-        brightness: Brightness.light, 
+        brightness: Brightness.light, // <-- DIPINDAH KE SINI
         primary: AppColorsLight.primary,
         secondary: AppColorsLight.accent,
         background: AppColorsLight.background,
@@ -134,14 +134,14 @@ class MyApp extends StatelessWidget {
         showUnselectedLabels: true,
       ),
     );
-    
+    // --- AKHIR TEMA TERANG ---
 
-    
+    // --- TEMA GELAP (DARK THEME) ---
     final ThemeData darkTheme = ThemeData(
-      
+      // brightness: Brightness.dark, // <-- DIHAPUS DARI SINI
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColorsDark.primary,
-        brightness: Brightness.dark, 
+        brightness: Brightness.dark, // <-- DIPINDAH KE SINI
         primary: AppColorsDark.primary,
         secondary: AppColorsDark.accent,
         background: AppColorsDark.background,
@@ -204,9 +204,9 @@ class MyApp extends StatelessWidget {
         showUnselectedLabels: true,
       ),
     );
-    
+    // --- AKHIR TEMA GELAP ---
 
-    
+    // Gunakan Consumer untuk mendengarkan perubahan tema
     return Consumer<ThemeNotifier>(
       builder: (context, themeNotifier, child) {
         return MaterialApp(

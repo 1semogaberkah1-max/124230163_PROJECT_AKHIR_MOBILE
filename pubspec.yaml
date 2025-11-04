@@ -34,7 +34,6 @@ dependencies:
   shared_preferences: ^2.2.3
   rive: ^0.13.20 # Untuk Animasi Login Page
   flutter_dotenv: ^6.0.0
-  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

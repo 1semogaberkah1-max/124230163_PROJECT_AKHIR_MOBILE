@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
+// File: lib/services/notification_service.dart
+
+import 'package:flutter/material.dart'; // Untuk TimeOfDay
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
-import '../models/reminder_model.dart';
+import '../models/reminder_model.dart'; // Import model Reminder
 
 class NotificationService {
+  // Singleton pattern
   static final NotificationService _instance = NotificationService._internal();
   factory NotificationService() => _instance;
   NotificationService._internal();
@@ -13,6 +16,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  // 1. Inisialisasi dan Konfigurasi
   Future<void> init() async {
     await _configureLocalTimeZone();
     const AndroidInitializationSettings androidSettings =
@@ -24,13 +28,17 @@ class NotificationService {
     );
     await _notificationsPlugin.initialize(
       settings,
-      onDidReceiveNotificationResponse: (payload) {},
+      onDidReceiveNotificationResponse: (payload) {
+        // Aksi saat notifikasi diklik
+      },
     );
   }
 
+  // Helper untuk setup timezone
   Future<void> _configureLocalTimeZone() async {
     tz.initializeTimeZones();
     try {
+      // Ambil objek TimezoneInfo, lalu ambil properti .identifier
       final timezoneInfo = await FlutterTimezone.getLocalTimezone();
       final String timeZoneName = timezoneInfo.identifier;
 
@@ -40,6 +48,7 @@ class NotificationService {
     }
   }
 
+  // 2. Meminta Izin
   Future<bool> requestPermissions() async {
     final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
         _notificationsPlugin.resolvePlatformSpecificImplementation<
@@ -52,6 +61,7 @@ class NotificationService {
     return (androidResult ?? true) && (exactAlarmResult ?? true);
   }
 
+  // 3. Menjadwalkan Notifikasi
   Future<void> scheduleWeeklyNotification(Reminder reminder) async {
     await cancelNotification(reminder.id);
     if (!reminder.isActive) {
@@ -90,10 +100,12 @@ class NotificationService {
     );
   }
 
+  // 4. Membatalkan Notifikasi
   Future<void> cancelNotification(String reminderId) async {
     await _notificationsPlugin.cancel(reminderId.hashCode);
   }
 
+  // 5. Helper untuk Menghitung Jadwal Berikutnya
   tz.TZDateTime _nextInstanceOf(
       {required String day, required TimeOfDay time}) {
     tz.TZDateTime now = tz.TZDateTime.now(tz.local);
@@ -143,7 +155,7 @@ class NotificationService {
       case 'Minggu':
         return DateTime.sunday;
       default:
-        return DateTime.monday;
+        return DateTime.monday; // Default
     }
   }
 }

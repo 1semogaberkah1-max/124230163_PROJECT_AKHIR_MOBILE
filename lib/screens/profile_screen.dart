@@ -1,4 +1,6 @@
-import 'dart:io';
+// File: lib/screens/profile_screen.dart
+
+import 'dart:io'; // Untuk File
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -59,6 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  // --- Fungsi Upload Foto ---
   Future<void> _pickAndUploadImage() async {
     final XFile? pickedFile = await _picker.pickImage(
       source: ImageSource.gallery,
@@ -72,10 +75,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isSaving = true);
     final imageFile = File(pickedFile.path);
 
+    // --- PERBAIKAN TYPO DI SINI ---
+    // Pastikan nama method sudah benar (misal: uploadProfilePicture)
     final newPhotoUrl = await _userService.uploadProfilePicture(
       imageFile,
       _userProfile!.id,
     );
+    // ----------------------------
 
     if (newPhotoUrl != null) {
       final updatedProfile = _userProfile!.copyWith(photoUrl: newPhotoUrl);
@@ -95,6 +101,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() => _isSaving = false);
   }
 
+  // --- Fungsi Simpan Perubahan (Nama & TZ) ---
   Future<void> _saveProfileChanges() async {
     if (_userProfile == null || _selectedTimezone == null) return;
 
@@ -148,6 +155,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // --- Bagian Foto Profil ---
               Center(
                 child: Stack(
                   children: [
@@ -190,6 +198,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+
+              // --- SAKLAR MODE TEMA ---
               Text(
                 'Mode Tampilan',
                 style: Theme.of(context).textTheme.titleMedium,
@@ -224,6 +234,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 24),
+              // ------------------------------------
+
+              // --- Email (Read-only) ---
               TextFormField(
                 initialValue: _userProfile!.email,
                 readOnly: true,
@@ -233,6 +246,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // --- Nama Lengkap (Edit) ---
               TextFormField(
                 controller: _fullNameController,
                 decoration: const InputDecoration(
@@ -241,6 +256,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+
+              // --- Zona Waktu (Edit) ---
               DropdownButtonFormField<String>(
                 value: _selectedTimezone,
                 decoration: const InputDecoration(
@@ -260,12 +277,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
               const SizedBox(height: 32),
+
+              // --- Tombol Simpan ---
               ElevatedButton.icon(
                 onPressed: _saveProfileChanges,
                 icon: const Icon(Icons.save),
                 label: const Text('Simpan Perubahan'),
               ),
               const SizedBox(height: 16),
+
+              // --- Tombol Logout ---
               TextButton.icon(
                 onPressed: () {
                   AuthService().signOutUser(context);
@@ -279,8 +300,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ],
           ),
+          // --- Overlay Loading ---
           if (_isSaving)
             Container(
+              // Latar belakang semi-transparan
               color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
               child: Center(
                 child: Card(

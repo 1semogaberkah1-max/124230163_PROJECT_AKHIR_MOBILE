@@ -1,15 +1,18 @@
+// File: lib/services/auth_service.dart
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
-import '../pages/main_screen.dart';
+import '../pages/main_screen.dart'; // Menggunakan MainScreen (Bottom Nav)
 import '../pages/login_screen.dart';
 import 'user_service.dart';
 
 class AuthService {
   final UserService _userService = UserService();
 
+  // --- FUNGSI BARU: signUpUser ---
   Future<void> signUpUser({
-    required String fullName,
+    required String fullName, // Menerima Nama Lengkap
     required String email,
     required String password,
     required BuildContext context,
@@ -21,9 +24,10 @@ class AuthService {
       );
 
       if (response.user != null) {
+        // PENTING: Buat profil di tabel 'users', mengirimkan fullName
         final userProfile = await _userService.getOrCreateUserProfile(
           response.user!,
-          fullName: fullName,
+          fullName: fullName, // Meneruskan Nama
         );
 
         if (userProfile == null) {
@@ -36,7 +40,7 @@ class AuthService {
             'Pendaftaran berhasil! Silakan login.',
             Colors.green,
           );
-
+          // Kembali ke halaman Login
           Navigator.of(context).pop();
         }
       }
@@ -46,7 +50,9 @@ class AuthService {
       _showSnackbar(context, 'Terjadi Kesalahan: ${e.toString()}', Colors.red);
     }
   }
+  // ------------------------------
 
+  // FUNGSI signInUser (Diarahkan ke MainScreen)
   Future<void> signInUser({
     required String email,
     required String password,
@@ -68,6 +74,7 @@ class AuthService {
         }
 
         if (context.mounted) {
+          // --- Diarahkan ke MainScreen (Bottom Navigation) ---
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const MainScreen()),
             (route) => false,
@@ -86,6 +93,7 @@ class AuthService {
     }
   }
 
+  // FUNGSI signOutUser
   Future<void> signOutUser(BuildContext context) async {
     try {
       await supabase.auth.signOut();
@@ -104,6 +112,7 @@ class AuthService {
     }
   }
 
+  // METHOD _showSnackbar
   void _showSnackbar(BuildContext context, String message, Color color) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

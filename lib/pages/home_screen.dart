@@ -1,8 +1,14 @@
+// File: lib/pages/home_screen.dart
+// VERSI GABUNGAN (Grid Menu + AI Reminder Harian)
+
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../services/gemini_service.dart';
 import '../services/user_service.dart';
 import '../models/user_profile_model.dart';
+
+// --- IMPOR UNTUK SEMUA LAYAR DI GRID ---
 import '../screens/chatbot_screen.dart';
 import '../screens/log_list_screen.dart';
 import '../screens/ai_settings_screen.dart';
@@ -10,8 +16,9 @@ import '../screens/manual_log_screen.dart';
 import '../screens/recap_screen.dart';
 import '../screens/reminder_screen.dart';
 import '../screens/time_converter_screen.dart';
-import '../services/auth_service.dart';
+import '../services/auth_service.dart'; // Impor untuk Logout
 
+// --- Class data untuk menu grid ---
 class _MenuItem {
   final String title;
   final IconData icon;
@@ -35,11 +42,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final GeminiService _geminiService = GeminiService();
   final UserService _userService = UserService();
 
+  // MENGGUNAKAN LOGIKA BARU (getDailyReminder)
   late Future<String> _reminderFuture;
 
   UserProfile? _userProfile;
   bool _isLoadingProfile = true;
 
+  // --- Daftar menu untuk GridView (DARI VERSI LAMA) ---
   final List<_MenuItem> _menuItems = [
     _MenuItem(
         title: 'Catat (AI)',
@@ -66,15 +75,17 @@ class _HomeScreenState extends State<HomeScreen> {
         icon: Icons.schedule,
         route: const TimeConverterScreen()),
   ];
+  // ----------------------------------------------------
 
   @override
   void initState() {
     super.initState();
-
+    // MENGGUNAKAN LOGIKA BARU
     _reminderFuture = Future.value('Memuat pengingat harian...');
     _fetchProfileAndMotivation();
   }
 
+  // MENGGUNAKAN LOGIKA BARU
   Future<void> _fetchProfileAndMotivation() async {
     final user = supabase.auth.currentUser;
 
@@ -100,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final name = profile?.fullName;
     final prefs = profile?.aiReminderPrefs;
 
+    // Panggil getDailyReminder (BUKAN getMotivation)
     final reminderFuture = _geminiService.getDailyReminder(
       userName: name,
       aiReminderPrefs: prefs,
@@ -114,6 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // MENGGUNAKAN LOGIKA BARU
   void _navigateToSettings() async {
     if (_userProfile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -137,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // MENGGUNAKAN LOGIKA BARU
   String get _displayName {
     if (_userProfile?.fullName != null && _userProfile!.fullName!.isNotEmpty) {
       return _userProfile!.fullName!;
@@ -152,6 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard Belajar'),
+        // Tombol Settings AI (DARI VERSI BARU)
         actions: [
           if (!_isLoadingProfile && _userProfile != null)
             IconButton(
@@ -161,6 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
         ],
       ),
+      // MENGGUNAKAN SingleChildScrollView AGAR RESPONSIF
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -168,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Sapaan (DARI VERSI BARU)
               Text(
                 'Halo, $displayName!',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -183,6 +200,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 30),
+
+              // Kotak Pengingat/Tips Harian (DARI VERSI BARU)
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -219,19 +238,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
+
               const SizedBox(height: 40),
+
+              // --- GridView Menu (DARI VERSI LAMA) ---
               GridView.count(
                 crossAxisCount: 2,
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 mainAxisSpacing: 12.0,
                 crossAxisSpacing: 12.0,
-                childAspectRatio: 1.1,
+                childAspectRatio: 1.1, // Rasio kartu menu
                 children: _menuItems.map((item) {
                   return _buildMenuCard(context, item);
                 }).toList(),
               ),
+              // ----------------------------------------
+
               const SizedBox(height: 40),
+
+              // Tombol Logout (DARI VERSI BARU)
               TextButton.icon(
                 onPressed: () {
                   AuthService().signOutUser(context);
@@ -249,16 +275,18 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // --- Widget Kartu Menu (DARI VERSI LAMA, disesuaikan) ---
   Widget _buildMenuCard(BuildContext context, _MenuItem item) {
     final ColorScheme colors = Theme.of(context).colorScheme;
 
+    // Tentukan warna ikon
     final Color iconColor;
     if (item.title == 'Rekap Statistik') {
-      iconColor = colors.secondary;
+      iconColor = colors.secondary; // Warna aksen (Oranye)
     } else if (item.title == 'Catat (AI)') {
-      iconColor = colors.primary;
+      iconColor = colors.primary; // Warna utama (Biru)
     } else {
-      iconColor = colors.primary.withOpacity(0.8);
+      iconColor = colors.primary.withOpacity(0.8); // Sedikit beda
     }
 
     return InkWell(
@@ -270,6 +298,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       borderRadius: BorderRadius.circular(12.0),
       child: Card(
+        // CardTheme dari main.dart akan otomatis diterapkan
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -283,7 +312,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
+                      color: colors.onSurface, // Teks di atas card
                     ),
               ),
             ],

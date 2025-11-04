@@ -1,7 +1,10 @@
+// File: lib/screens/manual_log_screen.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../models/learning_log_model.dart';
 import '../models/user_profile_model.dart';
@@ -10,7 +13,9 @@ import '../services/user_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 
+// --- IMPORT BARU UNTUK CEK PLATFORM ---
 import 'package:flutter/foundation.dart' show kIsWeb;
+// ---------------------------------
 
 class ManualLogScreen extends StatefulWidget {
   const ManualLogScreen({super.key});
@@ -24,6 +29,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
   final UserService _userService = UserService();
   final ImagePicker _picker = ImagePicker();
 
+  // Form
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _materialController = TextEditingController();
   final TextEditingController _durationController = TextEditingController();
@@ -32,6 +38,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _notesController = TextEditingController();
 
+  // State
   UserProfile? _currentUserProfile;
   bool _isLoadingProfile = true;
   bool _isUploading = false;
@@ -67,6 +74,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
     });
   }
 
+  // --- Fungsi Image Picker ---
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(
       source: source,
@@ -110,6 +118,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
     );
   }
 
+  // --- Fungsi Lokasi ---
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -147,6 +156,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
     return true;
   }
 
+  // --- FUNGSI LOKASI (DIPERBARUI) ---
   Future<void> _getCurrentLocation() async {
     setState(() => _isFetchingLocation = true);
 
@@ -157,14 +167,20 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
         return;
       }
 
+      // 1. Ambil koordinat (Berfungsi di Web & Native)
       Position position = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.medium,
           timeLimit: const Duration(seconds: 10));
 
+      // 2. Cek apakah kita di Web atau Native
       if (kIsWeb) {
+        // --- JIKA DI WEB ---
+        // 'geocoding' tidak didukung di web. Tampilkan koordinat saja.
         _locationController.text =
             "Koordinat: ${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}";
       } else {
+        // --- JIKA DI ANDROID/IOS ---
+        // Ubah koordinat jadi alamat
         await setLocaleIdentifier('id_ID');
 
         List<Placemark> placemarks = await placemarkFromCoordinates(
@@ -174,7 +190,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
 
         if (placemarks.isNotEmpty) {
           Placemark place = placemarks[0];
-
+          // Gabungkan alamat (menghindari "null")
           final addressParts = [
             place.street,
             place.subLocality,
@@ -196,6 +212,7 @@ class _ManualLogScreenState extends State<ManualLogScreen> {
     }
   }
 
+  // --- Fungsi Simpan ---
   Future<void> _submitLog() async {
     if (!_formKey.currentState!.validate() || _currentUserProfile == null) {
       return;
