@@ -1,6 +1,3 @@
-// File: lib/services/log_service.dart
-// (PENAMBAHAN FUNGSI getTopLocations)
-
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -8,7 +5,6 @@ import '../main.dart';
 import '../models/learning_log_model.dart';
 
 class LogService {
-  // 1. CREATE: Simpan data log
   Future<bool> addLog(LearningLog log) async {
     try {
       await supabase.from('learning_logs').insert(log.toSupabaseJson());
@@ -22,7 +18,6 @@ class LogService {
     }
   }
 
-  // 2. READ: Mengambil Log
   Future<List<LearningLog>> getLogs() async {
     try {
       final List<dynamic> response = await supabase
@@ -45,7 +40,6 @@ class LogService {
     }
   }
 
-  // --- 3. UPDATE: Mengubah Log Belajar ---
   Future<bool> updateLog(LearningLog log) async {
     try {
       await supabase
@@ -62,7 +56,6 @@ class LogService {
     }
   }
 
-  // --- 4. DELETE: Menghapus Log Belajar ---
   Future<bool> deleteLog(String logId) async {
     try {
       await supabase.from('learning_logs').delete().eq('id', logId);
@@ -76,13 +69,11 @@ class LogService {
     }
   }
 
-  // --- 5. RPC REKAP TOTAL (DIPERBARUI) ---
   Future<Map<String, dynamic>?> getRecap({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     try {
-      // Panggil RPC 'get_recap' dengan parameter
       final response = await supabase.rpc(
         'get_recap',
         params: {
@@ -103,7 +94,6 @@ class LogService {
     }
   }
 
-  // --- 6. UPLOAD FOTO ---
   Future<String?> uploadImageToStorage(File imageFile, String userId) async {
     try {
       final fileExtension = imageFile.path.split('.').last;
@@ -129,13 +119,11 @@ class LogService {
     }
   }
 
-  // --- 7. RPC TOP MATERI (LAMA) ---
   Future<List<Map<String, dynamic>>?> getTopMaterials({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     try {
-      // Panggil RPC 'get_top_materials' dengan parameter
       final response = await supabase.rpc(
         'get_top_materials',
         params: {
@@ -144,7 +132,6 @@ class LogService {
         },
       );
 
-      // Responnya adalah List<Map<String, dynamic>>
       return (response as List)
           .map((item) => item as Map<String, dynamic>)
           .toList();
@@ -157,13 +144,11 @@ class LogService {
     }
   }
 
-  // --- 8. RPC TOP LOKASI (BARU) ---
   Future<List<Map<String, dynamic>>?> getTopLocations({
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     try {
-      // Panggil RPC 'get_top_locations' yang baru kita buat
       final response = await supabase.rpc(
         'get_top_locations',
         params: {

@@ -1,6 +1,3 @@
-// File: lib/screens/recap_screen.dart
-// (TELAH DIPERBARUI UNTUK MENAMPILKAN LOKASI)
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/log_service.dart';
@@ -24,9 +21,8 @@ class _RecapScreenState extends State<RecapScreen> {
   Future<Map<String, dynamic>?>? _recapFuture;
   Future<List<Map<String, dynamic>>?>? _topMaterialsFuture;
   Future<Map<String, dynamic>?>? _ratesFuture;
-  // --- TAMBAHAN BARU 1: State Future untuk Lokasi ---
+
   Future<List<Map<String, dynamic>>?>? _topLocationsFuture;
-  // --------------------------------------------------
 
   @override
   void initState() {
@@ -51,20 +47,14 @@ class _RecapScreenState extends State<RecapScreen> {
         startDate: _startDate,
         endDate: endOfDay,
       );
-      // --- TAMBAHAN BARU 2: Panggil service lokasi ---
+
       _topLocationsFuture = _logService.getTopLocations(
         startDate: _startDate,
         endDate: endOfDay,
       );
-      // ----------------------------------------------
 
-      // --- TAMBAHAN BARU 3: Tambahkan ke Future.wait ---
-      Future.wait([
-        _recapFuture!,
-        _topMaterialsFuture!,
-        _topLocationsFuture! // <-- Tambahkan di sini
-      ]).then((_) {
-        // ----------------------------------------------
+      Future.wait([_recapFuture!, _topMaterialsFuture!, _topLocationsFuture!])
+          .then((_) {
         if (mounted) {
           setState(() => _isLoading = false);
         }
@@ -124,7 +114,6 @@ class _RecapScreenState extends State<RecapScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // UI Pemilih Tanggal
             Text(
               'Rentang Tanggal Laporan',
               style: Theme.of(context).textTheme.titleMedium,
@@ -143,7 +132,6 @@ class _RecapScreenState extends State<RecapScreen> {
               ),
             ),
             const Divider(height: 32, thickness: 1),
-
             if (_isLoading)
               const Center(
                 child: Padding(
@@ -151,17 +139,12 @@ class _RecapScreenState extends State<RecapScreen> {
                   child: CircularProgressIndicator(),
                 ),
               ),
-
             if (!_isLoading) ...[
-              // Bagian 1: Rekap Total
               _buildRecapTotalSection(),
               const SizedBox(height: 24),
-              // Bagian 2: Top Materi
               _buildTopMaterialsSection(),
-              const SizedBox(height: 24), // Beri jarak
-              // --- TAMBAHAN BARU 4: Panggil widget lokasi ---
+              const SizedBox(height: 24),
               _buildTopLocationsSection(),
-              // --------------------------------------------
             ],
           ],
         ),
@@ -186,7 +169,6 @@ class _RecapScreenState extends State<RecapScreen> {
 
         return Column(
           children: [
-            // Card Total Durasi
             Card(
               elevation: 2,
               child: Padding(
@@ -208,8 +190,6 @@ class _RecapScreenState extends State<RecapScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Card Total Biaya (Sekarang dengan Konversi)
             Card(
               elevation: 2,
               child: Padding(
@@ -351,19 +331,17 @@ class _RecapScreenState extends State<RecapScreen> {
     );
   }
 
-  // --- TAMBAHAN BARU 5: Widget untuk Top Lokasi ---
-  // (Ini adalah salinan dari _buildTopMaterialsSection yang dimodifikasi)
   Widget _buildTopLocationsSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tempat Belajar Terfavorit', // <-- Judul diubah
+          'Tempat Belajar Terfavorit',
           style: Theme.of(context).textTheme.titleLarge,
         ),
         const SizedBox(height: 8),
         FutureBuilder<List<Map<String, dynamic>>?>(
-          future: _topLocationsFuture, // <-- Gunakan Future lokasi
+          future: _topLocationsFuture,
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return const Text('Gagal memuat data lokasi.');
@@ -373,7 +351,7 @@ class _RecapScreenState extends State<RecapScreen> {
                 snapshot.data!.isEmpty) {
               return const Card(
                 child: ListTile(
-                  title: Text('Belum ada data lokasi'), // <-- Teks diubah
+                  title: Text('Belum ada data lokasi'),
                   subtitle: Text(
                       'Anda belum mencatat lokasi belajar pada rentang ini.'),
                 ),
@@ -388,19 +366,18 @@ class _RecapScreenState extends State<RecapScreen> {
               itemCount: locations.length,
               itemBuilder: (context, index) {
                 final item = locations[index];
-                // <-- Ambil 'location_name' dari RPC
+
                 final String name = item['location_name'] ?? 'Tanpa Nama';
                 final int minutes = (item['total_minutes'] as num).toInt();
 
                 return Card(
                   child: ListTile(
                     leading: CircleAvatar(
-                      // <-- Warna diubah
                       backgroundColor: Colors.teal.shade100,
                       child: Text(
                         '#${index + 1}',
                         style: const TextStyle(
-                          color: Colors.teal, // <-- Warna diubah
+                          color: Colors.teal,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

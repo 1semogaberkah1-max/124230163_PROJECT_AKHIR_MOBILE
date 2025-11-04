@@ -1,5 +1,3 @@
-// File: lib/screens/log_list_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/learning_log_model.dart';
@@ -17,55 +15,49 @@ class LogListScreen extends StatefulWidget {
 class _LogListScreenState extends State<LogListScreen> {
   final LogService _logService = LogService();
 
-  // --- STATE BARU UNTUK PENCARIAN ---
   final TextEditingController _searchController = TextEditingController();
-  List<LearningLog> _allLogs = []; // Menyimpan semua log dari database
-  List<LearningLog> _filteredLogs = []; // Menyimpan log yang sudah difilter
+  List<LearningLog> _allLogs = [];
+  List<LearningLog> _filteredLogs = [];
   bool _isLoading = true;
-  // ---------------------------------
 
   @override
   void initState() {
     super.initState();
-    _fetchLogs(); // Ambil data saat layar dibuka
-    // Tambahkan listener ke search controller
+    _fetchLogs();
+
     _searchController.addListener(_filterLogs);
   }
 
   @override
   void dispose() {
-    _searchController.removeListener(_filterLogs); // Hapus listener
+    _searchController.removeListener(_filterLogs);
     _searchController.dispose();
     super.dispose();
   }
 
-  // --- FUNGSI BARU: Ambil data dari service ---
   Future<void> _fetchLogs() async {
     setState(() => _isLoading = true);
     final logs = await _logService.getLogs();
     setState(() {
       _allLogs = logs;
-      _filteredLogs = logs; // Awalnya, tampilkan semua
+      _filteredLogs = logs;
       _isLoading = false;
     });
   }
 
-  // --- FUNGSI BARU: Filter list berdasarkan input pencarian ---
   void _filterLogs() {
     final query = _searchController.text.toLowerCase();
     setState(() {
       if (query.isEmpty) {
-        _filteredLogs = _allLogs; // Tampilkan semua jika pencarian kosong
+        _filteredLogs = _allLogs;
       } else {
         _filteredLogs = _allLogs.where((log) {
-          // Cek apakah materi mengandung teks pencarian
           return log.material.toLowerCase().contains(query);
         }).toList();
       }
     });
   }
 
-  // Helper format durasi
   String _formatDuration(int totalMinutes) {
     if (totalMinutes < 60) {
       return '${totalMinutes}m';
@@ -84,10 +76,8 @@ class _LogListScreenState extends State<LogListScreen> {
       appBar: AppBar(
         title: const Text('Riwayat Belajar Anda'),
       ),
-      // --- PERUBAHAN BODY: Tidak lagi pakai FutureBuilder ---
       body: Column(
         children: [
-          // --- WIDGET BARU: SEARCH BAR ---
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
@@ -98,7 +88,6 @@ class _LogListScreenState extends State<LogListScreen> {
                 border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 ),
-                // Tombol 'clear' (X)
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -110,14 +99,10 @@ class _LogListScreenState extends State<LogListScreen> {
               ),
             ),
           ),
-          // ---------------------------------
-
-          // Tampilkan loading indicator
           if (_isLoading)
             const Expanded(
               child: Center(child: CircularProgressIndicator()),
             )
-          // Tampilkan jika data kosong
           else if (_filteredLogs.isEmpty)
             Expanded(
               child: Center(
@@ -133,15 +118,13 @@ class _LogListScreenState extends State<LogListScreen> {
                 ),
               ),
             )
-          // Tampilkan list hasil
           else
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                itemCount: _filteredLogs.length, // Gunakan list yang difilter
+                itemCount: _filteredLogs.length,
                 itemBuilder: (context, index) {
-                  final log =
-                      _filteredLogs[index]; // Gunakan list yang difilter
+                  final log = _filteredLogs[index];
 
                   final formattedDate = DateFormat(
                     'EEEE, dd MMMM yyyy HH:mm',
@@ -216,13 +199,12 @@ class _LogListScreenState extends State<LogListScreen> {
                         ],
                       ),
                       onTap: () {
-                        // Saat kembali dari detail, refresh datanya
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => LogDetailScreen(log: log),
                           ),
-                        ).then((_) => _fetchLogs()); // <-- Refresh saat kembali
+                        ).then((_) => _fetchLogs());
                       },
                     ),
                   );

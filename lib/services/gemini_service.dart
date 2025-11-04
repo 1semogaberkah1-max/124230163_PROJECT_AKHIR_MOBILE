@@ -1,6 +1,3 @@
-// File: lib/services/gemini_service.dart
-// (VERSI LENGKAP DAN DIPERBAIKI)
-
 import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
@@ -13,9 +10,6 @@ class GeminiService {
       : _model =
             GenerativeModel(model: 'gemini-2.5-flash', apiKey: geminiApiKey);
 
-  // --- SEMUA PROMPT DIDEFINISIKAN DI SINI ---
-
-  // 1. PROMPT PARSING (Dipindahkan ke atas)
   static const String _parsingPromptTemplate = '''
   Anda adalah parser data yang sangat akurat. Tugas Anda adalah mengubah teks laporan belajar pengguna menjadi format JSON.
   Jika informasi tidak tersedia, gunakan nilai null atau default yang relevan (misalnya 0 untuk biaya).
@@ -37,7 +31,6 @@ class GeminiService {
   Teks Pengguna: 
   ''';
 
-  // 2. PROMPT DETEKSI MAKSUD (Dipindahkan ke atas)
   static const String _intentPromptTemplate = '''
   Anda adalah AI klasifikasi. Tentukan maksud dari teks pengguna.
   Apakah teks tersebut adalah (A) Laporan input data belajar, atau (B) Pertanyaan tentang data.
@@ -50,7 +43,6 @@ class GeminiService {
   Teks Pengguna: 
   ''';
 
-  // 3. PROMPT Q&A (Dipindahkan ke atas)
   static const String _qnaPromptTemplate = '''
   Anda adalah asisten belajar yang ramah. Berdasarkan data JSON berikut, jawab pertanyaan pengguna dalam Bahasa Indonesia yang singkat dan jelas.
 
@@ -66,15 +58,12 @@ class GeminiService {
   Jawaban Anda:
   ''';
 
-  // 4. PROMPT ANALISIS REKAP (Sudah benar)
   static const String _analysisPromptTemplate = '''
   Anda adalah asisten analisis pembelajaran yang tugasnya menganalisis data rekap belajar pengguna dan memberikan saran yang konstruktif dan memotivasi.
-
   Analisis Anda harus mencakup:
   1. KESIMPULAN: Ringkasan singkat total durasi dan biaya.
-  2. ANALISIS: Identifikasi tren (misal: Apakah biaya tinggi untuk durasi rendah? Apakah fokus hanya pada satu materi?).
-  3. SARAN: Berikan 1-2 saran spesifik untuk meningkatkan efisiensi atau disiplin di minggu/bulan berikutnya.
-
+  2. ANALISIS: Identifikasi tren.
+  3. SARAN: Berikan 1-2 saran spesifik.
   Gunakan Bahasa Indonesia yang ramah, profesional, dan memotivasi.
 
   Data Analisis:
@@ -88,8 +77,13 @@ class GeminiService {
   Jawaban Anda:
   ''';
 
-  // --- FUNGSI HILANG: _getDefaultInstruction (DITAMBAHKAN) ---
-  // (Dibutuhkan oleh getDailyReminder)
+  static const String _knowledgePromptTemplate = '''
+  Anda adalah sebuah ensiklopedia. Berikan ringkasan singkat (satu paragraf, maksimal 50 kata) tentang topik berikut. 
+  Gunakan Bahasa Indonesia.
+  Topik: "[QUERY]"
+  Ringkasan:
+  ''';
+
   String _getDefaultInstruction(String category) {
     switch (category) {
       case 'Reminder Belajar':
@@ -101,13 +95,10 @@ class GeminiService {
       case 'Tips Belajar':
         return 'Berikan satu tips praktis untuk meningkatkan sesi belajar.';
       default:
-        // Kategori kustom akan menggunakan ini
         return 'Berikan pesan motivasi singkat terkait: $category';
     }
   }
 
-  // --- FUNGSI HILANG: getDailyReminder (DITAMBAHKAN) ---
-  // (Dibutuhkan oleh home_screen.dart)
   Future<String> getDailyReminder({
     String? userName,
     List<String>? aiReminderPrefs,
@@ -157,12 +148,10 @@ class GeminiService {
     }
   }
 
-  // --- METHOD 1: handleDataInput (Optimized) ---
   Future<Map<String, dynamic>?> handleDataInput(
     String rawText,
     String userTimezone,
   ) async {
-    // Prompt sudah dipindah ke atas
     final fullPrompt = _parsingPromptTemplate + rawText;
 
     try {
@@ -183,9 +172,7 @@ class GeminiService {
     }
   }
 
-  // --- METHOD 2: Motivasi (Tidak Berubah) ---
   Future<String> getMotivation() async {
-    // (Fungsi ini tetap ada jika Anda ingin menggunakannya di tempat lain)
     const prompt =
         'Berikan satu kalimat singkat, padat, dan sangat memotivasi tentang pentingnya disiplin belajar dan mencapai tujuan. Sertakan satu emoji. Maksimal 15 kata.';
     try {
@@ -200,9 +187,7 @@ class GeminiService {
     }
   }
 
-  // --- METHOD 3: detectIntent (Optimized) ---
   Future<String> detectIntent(String rawText) async {
-    // Prompt sudah dipindah ke atas
     final fullPrompt = _intentPromptTemplate + rawText;
     try {
       final response = await _model.generateContent([Content.text(fullPrompt)]);
@@ -218,7 +203,6 @@ class GeminiService {
     }
   }
 
-  // --- METHOD 4: answerQuestion (Optimized) ---
   Future<String> answerQuestion({
     required String userQuestion,
     required Map<String, dynamic>? recapData,
@@ -227,7 +211,6 @@ class GeminiService {
     final String recapJson = jsonEncode(recapData ?? {});
     final String topMaterialsJson = jsonEncode(topMaterialsData ?? []);
 
-    // Prompt sudah dipindah ke atas
     String fullPrompt = _qnaPromptTemplate
         .replaceAll('[RECAP_JSON]', recapJson)
         .replaceAll('[TOP_MATERIALS_JSON]', topMaterialsJson)
@@ -242,29 +225,37 @@ class GeminiService {
     }
   }
 
-  // --- METHOD BARU: ANALISIS REKAP (getRecapAnalysis) ---
-  // --- (LOGIKA DIPERBAIKI) ---
   Future<String?> getRecapAnalysis({
     required Map<String, dynamic>? recapTotal,
     required List<Map<String, dynamic>>? topMaterials,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
-    // --- PERBAIKAN DI SINI ---
-    // Ganti placeholder satu per satu, BUKAN menimpa semuanya
     String fullPrompt = _analysisPromptTemplate
         .replaceAll('[RECAP_TOTAL_JSON]', jsonEncode(recapTotal ?? {}))
         .replaceAll('[TOP_MATERIALS_JSON]', jsonEncode(topMaterials ?? []))
         .replaceAll('[START_DATE]', startDate.toIso8601String())
         .replaceAll('[END_DATE]', endDate.toIso8601String());
-    // ------------------------
 
     try {
       final response = await _model.generateContent([Content.text(fullPrompt)]);
       return response.text;
     } catch (e) {
       debugPrint("Gemini Analysis Error: $e");
-      return null; // Kembalikan null jika gagal
+      return null;
+    }
+  }
+
+  Future<String?> getGeneralKnowledge(String query) async {
+    String fullPrompt = _knowledgePromptTemplate.replaceAll('[QUERY]', query);
+
+    try {
+      final response = await _model.generateContent([Content.text(fullPrompt)]);
+      return response.text?.trim() ??
+          'Maaf, saya tidak menemukan informasi tentang topik itu.';
+    } catch (e) {
+      debugPrint("Gemini Knowledge Error: $e");
+      return 'Terjadi kesalahan saat mengambil data.';
     }
   }
 }

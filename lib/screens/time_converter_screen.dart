@@ -1,9 +1,6 @@
-// File: lib/screens/time_converter_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz; // Pastikan ini di-import
 
 class TimeConverterScreen extends StatefulWidget {
   const TimeConverterScreen({super.key});
@@ -77,8 +74,6 @@ class _TimeConverterScreenState extends State<TimeConverterScreen> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-
-            // Card Pemilih Waktu
             Card(
               elevation: 2,
               child: ListTile(
@@ -96,8 +91,6 @@ class _TimeConverterScreenState extends State<TimeConverterScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Pemilih Zona Waktu
             DropdownButtonFormField<String>(
               value: _selectedZoneName,
               decoration: const InputDecoration(
@@ -119,35 +112,25 @@ class _TimeConverterScreenState extends State<TimeConverterScreen> {
               },
             ),
             const Divider(height: 40, thickness: 1),
-
-            // Hasil Konversi
             Text(
               'Hasil Konversi',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
-
             ...convertedTimes.entries.map((entry) {
               return Card(
                 elevation: 1,
-                // --- PERBAIKAN DI SINI (1) ---
-                // Hapus warna hardcoded agar mengambil dari CardTheme
-                // color: Colors.grey.shade100,
-                // -----------------------------
                 child: ListTile(
                   title: Text(
-                    entry.key, // Nama Zona Waktu (misal: "WITA")
+                    entry.key,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   trailing: Text(
-                    entry.value, // Waktu (misal: "14:00")
+                    entry.value,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      // --- PERBAIKAN DI SINI (2) ---
-                      // Ambil warna dari tema, bukan hardcode
                       color: Theme.of(context).colorScheme.primary,
-                      // -----------------------------
                     ),
                   ),
                 ),

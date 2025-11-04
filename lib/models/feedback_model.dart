@@ -1,5 +1,3 @@
-// File: lib/models/feedback_model.dart
-
 class FeedbackModel {
   final String id;
   final String userId;
@@ -15,7 +13,6 @@ class FeedbackModel {
     required this.createdAt,
   });
 
-  // Dari Supabase JSON
   factory FeedbackModel.fromSupabaseJson(Map<String, dynamic> json) {
     return FeedbackModel(
       id: json['id'] as String,
@@ -26,7 +23,6 @@ class FeedbackModel {
     );
   }
 
-  // --- (METHOD INI TIDAK DIPAKAI LAGI UNTUK SAVE) ---
   Map<String, dynamic> toSupabaseJson() {
     return {
       'id': id,
@@ -37,9 +33,6 @@ class FeedbackModel {
     };
   }
 
-  // --- METHOD BARU: UNTUK UPSERT ---
-  // Kita hanya kirim data yang kita ingin insert/update.
-  // Database akan mengurus 'id' dan 'created_at' secara otomatis.
   Map<String, dynamic> toSupabaseUpsertJson() {
     return {
       'user_id': userId,

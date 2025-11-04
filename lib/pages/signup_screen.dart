@@ -1,5 +1,3 @@
-// File: lib/pages/signup_screen.dart
-
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
@@ -11,9 +9,8 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  // --- CONTROLLER BARU ---
   final TextEditingController _fullNameController = TextEditingController();
-  // -----------------------
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -21,14 +18,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   void dispose() {
-    _fullNameController.dispose(); // Dispose controller baru
+    _fullNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   void _handleSignUp() async {
-    if (_fullNameController.text.isEmpty || // Cek nama
+    if (_fullNameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -41,18 +38,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     setState(() {
-      _isLoading = true; // Aktifkan loading
+      _isLoading = true;
     });
 
-    // Panggil fungsi daftar dari AuthService
     await _authService.signUpUser(
-      fullName: _fullNameController.text.trim(), // Kirim Nama
+      fullName: _fullNameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
       context: context,
     );
 
-    // Hentikan loading
     if (mounted) {
       setState(() {
         _isLoading = false;
@@ -62,7 +57,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Ukuran layar untuk membatasi lebar form
     final screenSize = MediaQuery.of(context).size;
     final formWidth = screenSize.width > 600 ? 400.0 : screenSize.width * 0.85;
 
@@ -88,8 +82,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 40),
-
-                // --- INPUT NAMA LENGKAP (BARU) ---
                 TextField(
                   controller: _fullNameController,
                   keyboardType: TextInputType.name,
@@ -99,9 +91,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // ---------------------------------
-
-                // Input Email
                 TextField(
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -111,8 +100,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // Input Password
                 TextField(
                   controller: _passwordController,
                   obscureText: true,
@@ -122,8 +109,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                 ),
                 const SizedBox(height: 32),
-
-                // Tombol Daftar
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleSignUp,
                   child: _isLoading
@@ -144,8 +129,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                 ),
                 const SizedBox(height: 16),
-
-                // Tombol kembali ke Login
                 TextButton(
                   onPressed: _isLoading
                       ? null

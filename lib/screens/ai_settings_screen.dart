@@ -1,5 +1,3 @@
-// File: lib/screens/ai_settings_screen.dart
-
 import 'package:flutter/material.dart';
 import '../models/user_profile_model.dart';
 import '../services/user_service.dart';
@@ -16,7 +14,6 @@ class AiSettingsScreen extends StatefulWidget {
 class _AiSettingsScreenState extends State<AiSettingsScreen> {
   final UserService _userService = UserService();
 
-  // Semua kategori yang tersedia (DEFAULT)
   final List<String> _defaultCategories = [
     'Reminder Belajar',
     'Saran Materi',
@@ -24,21 +21,18 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     'Tips Belajar'
   ];
 
-  // Kategori yang sedang aktif (diambil dari profil)
   late List<String> _activeCategories;
   bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // Inisialisasi dengan preferensi user saat ini
+
     _activeCategories = List.from(widget.userProfile.aiReminderPrefs);
 
-    // Hapus duplikasi jika ada (untuk keamanan)
     _activeCategories = _activeCategories.toSet().toList();
   }
 
-  // Handle perubahan checkbox
   void _toggleCategory(String category, bool isChecked) {
     setState(() {
       if (isChecked && !_activeCategories.contains(category)) {
@@ -49,7 +43,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     });
   }
 
-  // Fungsi Tambah Kategori Kustom
   Future<void> _addCustomCategory() async {
     TextEditingController controller = TextEditingController();
 
@@ -73,7 +66,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
             onPressed: () {
               final text = controller.text.trim();
               if (text.isNotEmpty) {
-                // Pastikan nama kategori tidak terlalu panjang
                 final categoryName =
                     text.length > 50 ? '${text.substring(0, 50)}...' : text;
                 Navigator.pop(context, categoryName);
@@ -90,7 +82,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     );
 
     if (newCategory != null && newCategory.isNotEmpty) {
-      // Cek duplikasi (case-insensitive)
       if (_activeCategories
           .map((e) => e.toLowerCase())
           .contains(newCategory.toLowerCase())) {
@@ -101,12 +92,11 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
         }
         return;
       }
-      // Tambahkan kategori baru ke list aktif dan set default checked
+
       _toggleCategory(newCategory, true);
     }
   }
 
-  // Fungsi Hapus Kategori Kustom
   void _removeCustomCategory(String category) {
     setState(() {
       _activeCategories.remove(category);
@@ -118,7 +108,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     }
   }
 
-  // Handle simpan
   Future<void> _saveSettings() async {
     if (_activeCategories.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -134,7 +123,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
       _isSaving = true;
     });
 
-    // Simpan hanya kategori yang aktif
     final success = await _userService.updateAiReminderPrefs(
       userId: widget.userProfile.id,
       prefs: _activeCategories,
@@ -146,14 +134,13 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
       });
 
       if (success) {
-        // Pop dan kirim sinyal 'perubahan' (true) kembali ke home screen
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Preferensi AI berhasil disimpan!'),
             backgroundColor: Colors.green,
           ),
         );
-        // Kirim sinyal perubahan ke HomeScreen
+
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -166,13 +153,10 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     }
   }
 
-  // Widget Kustom untuk Kategori
   Widget _buildCategoryList() {
-    // Gabungkan default categories dan custom categories yang aktif
     final List<String> allUniqueCategories =
         _defaultCategories.toSet().toList();
 
-    // Tambahkan custom categories yang saat ini aktif
     for (var cat in _activeCategories) {
       if (!_defaultCategories.contains(cat)) {
         allUniqueCategories.add(cat);
@@ -180,7 +164,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
     }
 
     return ListView(
-      // Padding untuk menghindari tumpang tindih dengan tombol simpan
       padding: const EdgeInsets.only(bottom: 20),
       children: allUniqueCategories.map((category) {
         final isDefault = _defaultCategories.contains(category);
@@ -200,12 +183,11 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
           ),
           title: Text(category),
           trailing: isDefault
-              ? null // Tidak ada tombol hapus untuk default
+              ? null
               : IconButton(
                   icon: const Icon(Icons.delete_outline, color: Colors.red),
                   onPressed: () => _removeCustomCategory(category),
                 ),
-          // Tambahkan indikator visual untuk kategori custom
           subtitle: !isDefault
               ? const Text('Kustom',
                   style: TextStyle(color: Colors.grey, fontSize: 12))
@@ -231,8 +213,6 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
-
-            // Tombol Tambah Kustom
             OutlinedButton.icon(
               onPressed: _addCustomCategory,
               icon: const Icon(Icons.add_circle_outline),
@@ -244,13 +224,9 @@ class _AiSettingsScreenState extends State<AiSettingsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Daftar Kategori
             Expanded(
               child: _buildCategoryList(),
             ),
-
-            // Tombol Simpan
             ElevatedButton.icon(
               onPressed: _isSaving ? null : _saveSettings,
               icon: _isSaving

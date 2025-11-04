@@ -1,5 +1,3 @@
-// File: lib/screens/chatbot_screen.dart
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -25,7 +23,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final UserService _userService = UserService();
 
   UserProfile? _currentUserProfile;
-  bool _isLoading = true; // Set true saat loading profile
+  bool _isLoading = true;
   String _parsedResult = 'Memuat data pengguna...';
 
   @override
@@ -65,7 +63,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     });
   }
 
-  // --- Fungsi Utama ---
   Future<void> _handleSubmission() async {
     final rawText = _inputController.text.trim();
     if (rawText.isEmpty || _currentUserProfile == null) return;
@@ -94,7 +91,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  // --- Logika Input Data ---
   Future<void> _handleDataInput(String rawText) async {
     setState(() {
       _parsedResult = 'Memahami laporan dan menyimpan data...';
@@ -129,7 +125,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
-  // --- Logika Q&A ---
   Future<void> _handleQuestion(String userQuestion) async {
     setState(() {
       _parsedResult = 'Mengambil data rekap Anda...';
@@ -164,9 +159,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // --- AMBIL TEMA WARNA YANG AKTIF ---
     final ColorScheme colors = Theme.of(context).colorScheme;
-    // ----------------------------------
 
     return Scaffold(
       appBar: AppBar(
@@ -181,9 +174,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
-                  // --- PERBAIKAN UI DI SINI ---
                   decoration: BoxDecoration(
-                    color: colors.surface, // Warna Card (Putih/Gelap)
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: colors.primary.withOpacity(0.3)),
                   ),
@@ -192,10 +184,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     style: TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 13,
-                      color: colors.onSurface, // Warna Teks (Terang/Gelap)
+                      color: colors.onSurface,
                     ),
                   ),
-                  // ---------------------------
                 ),
               ),
             ),
@@ -205,7 +196,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               enabled: !_isLoading && _currentUserProfile != null,
               decoration: InputDecoration(
                 labelText: 'Tulis laporan atau pertanyaan...',
-                // Style diambil dari tema
                 suffixIcon: _isLoading
                     ? const Padding(
                         padding: EdgeInsets.all(8.0),

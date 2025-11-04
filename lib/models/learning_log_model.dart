@@ -1,10 +1,6 @@
-// File: lib/models/learning_log_model.dart
-
-import 'package:flutter/foundation.dart'; // Digunakan untuk toInt() jika ada num
-
 class LearningLog {
-  final String id; // ID dari Supabase
-  final String userId; // users.id
+  final String id;
+  final String userId;
   final String material;
   final int durationMin;
   final String? location;
@@ -12,7 +8,7 @@ class LearningLog {
   final String? notes;
   final String timezone;
   final DateTime txnTimestamp;
-  final String? photoUrl; // <-- TAMBAHAN BARU
+  final String? photoUrl;
 
   LearningLog({
     required this.id,
@@ -24,10 +20,9 @@ class LearningLog {
     this.notes,
     required this.timezone,
     required this.txnTimestamp,
-    this.photoUrl, // <-- TAMBAHAN BARU
+    this.photoUrl,
   });
 
-  // --- CONSTRUCTOR 1: Dari Supabase JSON (READ) ---
   factory LearningLog.fromSupabaseJson(Map<String, dynamic> json) {
     return LearningLog(
       id: json['id'] as String,
@@ -39,12 +34,10 @@ class LearningLog {
       notes: json['notes'] as String?,
       timezone: json['timezone'] as String,
       txnTimestamp: DateTime.parse(json['txn_timestamp']),
-      photoUrl: json['photo_url'] as String?, // <-- TAMBAHAN BARU
+      photoUrl: json['photo_url'] as String?,
     );
   }
 
-  // --- CONSTRUCTOR 2: Dari Gemini JSON (CREATE) ---
-  // Gemini tidak akan mengirim foto, jadi kita set null
   static LearningLog fromGeminiJson({
     required Map<String, dynamic> json,
     required String userId,
@@ -65,11 +58,10 @@ class LearningLog {
       notes: json['notes'],
       timezone: json['timezone'] ?? defaultTimezone,
       txnTimestamp: currentTimestamp,
-      photoUrl: null, // <-- Gemini tidak handle foto
+      photoUrl: null,
     );
   }
 
-  // Metode untuk INSERT ke Supabase
   Map<String, dynamic> toSupabaseJson() {
     return {
       'user_id': userId,
@@ -80,7 +72,7 @@ class LearningLog {
       'notes': notes,
       'timezone': timezone,
       'txn_timestamp': txnTimestamp.toIso8601String(),
-      'photo_url': photoUrl, // <-- TAMBAKAN BARU
+      'photo_url': photoUrl,
     };
   }
 }
